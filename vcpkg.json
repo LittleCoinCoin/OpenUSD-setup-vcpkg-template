@@ -1,0 +1,17 @@
+{
+  "name": "usd-test",
+  "version": "0.1.0",
+  "dependencies": [
+    {
+      "name": "tbb"
+    },
+    "usd"
+  ],
+  "builtin-baseline": "61f610845fb206298a69f708104a51d651872877",
+  "overrides": [
+    {
+      "name": "tbb",
+      "version-string": "2020_U3#8"
+    }
+  ]
+}
