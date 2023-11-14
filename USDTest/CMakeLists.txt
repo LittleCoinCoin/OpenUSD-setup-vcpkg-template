@@ -20,32 +20,32 @@ target_link_libraries(USDTest PRIVATE TBB::tbb)
 find_package(pxr CONFIG REQUIRED)
 target_link_libraries(USDTest PRIVATE
 
-ar
-arch
-gf
-js
-kind
-ndr
-pcp
-plug
-sdf
-sdr
-tf
-trace
+#ar
+#arch
+#gf
+#js
+#kind
+#ndr
+#pcp
+#plug
+#sdf
+#sdr
+#tf
+#trace
 usd
-usdGeom
-usdHydra
-usdLux
-usdMedia
-usdPhysics
-usdRender
-usdShade
-usdSkel
-usdUI
-usdUtils
-usdVol
-vt
-work
+#usdGeom
+#usdHydra
+#usdLux
+#usdMedia
+#usdPhysics
+#usdRender
+#usdShade
+#usdSkel
+#usdUI
+#usdUtils
+#usdVol
+#vt
+#work
 
 
 )
