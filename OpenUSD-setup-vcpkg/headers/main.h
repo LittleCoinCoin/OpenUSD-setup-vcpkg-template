@@ -10,3 +10,6 @@
 
 // For TestFunction_PixarTutorial_InspectAndAuthorProperties
 #include "pxr/usd/usd/tokens.h"
+
+// For TestFunction_ReferencingLayers
+#include "pxr/usd/usdGeom/xformCommonAPI.h"

@@ -1,4 +1,4 @@
-﻿
+
 #include <iostream>
 #include <string>
 #include "main.h"
@@ -16,7 +16,7 @@ void TestFunction_StageCreation()
 }
 
 /*!
-@brief Function reproducing the first example of the Pixar USD tutorial.
+@brief Function reproducing the first item of the Pixar USD tutorial.
 @see https://openusd.org/release/tut_helloworld.html 
 	 https://openusd.org/release/tut_helloworld_redux.html
 */
@@ -46,7 +46,7 @@ void TestFunction_PixarTutorial_HelloWorld()
 }
 
 /*!
-@brief Function reproducing the second example of the Pixar USD tutorial.
+@brief Function reproducing the second item of the Pixar USD tutorial.
 @see https://openusd.org/release/tut_inspect_and_author_props.html
 */
 void TestFunction_PixarTutorial_InspectAndAuthorProperties()
@@ -145,6 +145,122 @@ void TestFunction_PixarTutorial_InspectAndAuthorProperties()
 
 }
 
+/*!
+@brief Function reproducing the third item of the Pixar USD tutorial
+@see https://openusd.org/release/tut_referencing_layers.html
+*/
+void TestFunction_PixarTutorial_ReferencingLayers()
+{
+	std::cout << "** TestFunction_ReferencingLayers **" << std::endl;
+
+	// -- Step 1
+	std::cout << "---- Step 1 ----" << std::endl;
+
+	/*! Python code from the tutorial
+	    
+		from pxr import Usd, UsdGeom
+		stage = Usd.Stage.Open('HelloWorld.usda')
+		hello = stage.GetPrimAtPath('/hello')
+		stage.SetDefaultPrim(hello)
+		UsdGeom.XformCommonAPI(hello).SetTranslate((4, 5, 6))
+		print(stage.GetRootLayer().ExportToString())
+		stage.GetRootLayer().Save()
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdStageRefPtr stage = pxr::UsdStage::Open("HelloWorld.usda");
+	pxr::UsdPrim hello = stage->GetPrimAtPath(pxr::SdfPath("/hello"));
+	stage->SetDefaultPrim(hello);
+	pxr::UsdGeomXformCommonAPI(hello).SetTranslate(pxr::GfVec3d(4, 5, 6));
+
+	std::string fileResult;
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file HelloWorld.usda:\n" << fileResult << std::endl;
+
+	// -- Step 2
+	std::cout << "---- Step 2 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		refStage = Usd.Stage.CreateNew('RefExample.usda')
+		refSphere = refStage.OverridePrim('/refSphere')
+		print(refStage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdStageRefPtr refStage = pxr::UsdStage::CreateNew("RefExample.usda");
+	pxr::UsdPrim refSphere = refStage->OverridePrim(pxr::SdfPath("/refSphere"));
+
+	refStage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file RefExample.usda:\n" << fileResult << std::endl;
+
+	// -- Step 3
+	std::cout << "---- Step 3 ----" << std::endl;
+
+	/*! Python 
+		refSphere.GetReferences().AddReference('./HelloWorld.usda')
+		print(refStage.GetRootLayer().ExportToString())
+		refStage.GetRootLayer().Save()
+	*/
+
+	// Write the C++ equivalent of the python code above
+	refSphere.GetReferences().AddReference("./HelloWorld.usda");
+
+	refStage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file RefExample.usda after referencing HelloWorld.usda:\n" << fileResult << std::endl;
+
+	// -- Step 4
+	std::cout << "---- Step 4 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		refXform = UsdGeom.Xformable(refSphere)
+		refXform.SetXformOpOrder([])
+		print(refStage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXformable refXform(refSphere);
+	refXform.SetXformOpOrder({});
+
+	refStage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file RefExample.usda after setting XformOpOrder to empty:\n" << fileResult << std::endl;
+
+	// -- Step 5
+	std::cout << "---- Step 5 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		refSphere2 = refStage.OverridePrim('/refSphere2')
+		refSphere2.GetReferences().AddReference('./HelloWorld.usda')
+		print(refStage.GetRootLayer().ExportToString())
+		refStage.GetRootLayer().Save()
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdPrim refSphere2 = refStage->OverridePrim(pxr::SdfPath("/refSphere2"));
+	refSphere2.GetReferences().AddReference("./HelloWorld.usda");
+
+	refStage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file RefExample.usda after adding a second reference to HelloWorld.usda:\n" << fileResult << std::endl;
+
+	// -- Step 6
+	std::cout << "---- Step 6 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		overSphere = UsdGeom.Sphere.Get(refStage, '/refSphere2/world')
+		overSphere.GetDisplayColorAttr().Set( [(1, 0, 0)] )
+		print(refStage.GetRootLayer().ExportToString())
+		refStage.GetRootLayer().Save()
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomSphere overSphere = pxr::UsdGeomSphere::Get(refStage, pxr::SdfPath("/refSphere2/world"));
+	overSphere.GetDisplayColorAttr().Set(pxr::VtVec3fArray({ pxr::GfVec3f(1, 0, 0) }));
+
+	refStage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file RefExample.usda after setting the display color of /refSphere2/world to red:\n" << fileResult << std::endl;
+
+	refStage->GetRootLayer()->Save();
+}
+
 int main()
 {
 
@@ -153,6 +269,8 @@ int main()
 	TestFunction_PixarTutorial_HelloWorld();
 
 	TestFunction_PixarTutorial_InspectAndAuthorProperties();
+
+	TestFunction_ReferencingLayers();
 
 	std::cout << "End of main." << std::endl;
 
