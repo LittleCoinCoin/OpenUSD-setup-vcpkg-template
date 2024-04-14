@@ -1,4 +1,4 @@
-﻿
+
 #include <iostream>
 #include <string>
 #include "main.h"
@@ -46,7 +46,7 @@ void TestFunction_PixarTutorial_HelloWorld()
 }
 
 /*!
-@brief Function reproducing the second item of the Pixar USD tutorial.
+@brief Function reproducing the third item of the Pixar USD tutorial.
 @see https://openusd.org/release/tut_inspect_and_author_props.html
 */
 void TestFunction_PixarTutorial_InspectAndAuthorProperties()
@@ -146,7 +146,7 @@ void TestFunction_PixarTutorial_InspectAndAuthorProperties()
 }
 
 /*!
-@brief Function reproducing the third item of the Pixar USD tutorial
+@brief Function reproducing the fourth item of the Pixar USD tutorial
 @see https://openusd.org/release/tut_referencing_layers.html
 */
 void TestFunction_PixarTutorial_ReferencingLayers()
@@ -263,10 +263,10 @@ void TestFunction_PixarTutorial_ReferencingLayers()
 }
 
 /*!
-@brief Function reproducing the fifth item of the Pixar USD tutorial
+@brief Function reproducing the sixth item of the Pixar USD tutorial
 @see https://openusd.org/release/tut_traversing_stage.html
 */
-void TestFunction_StageTraversal()
+void TestFunction_PixarTutorial_StageTraversal()
 {
 	// This step of the tutorial originally uses usdview and the python interpreter.
 	// I will adapt the demonstrated commands to C++ code.
