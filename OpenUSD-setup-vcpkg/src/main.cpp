@@ -1,4 +1,4 @@
-
+﻿
 #include <iostream>
 #include <string>
 #include "main.h"
@@ -271,6 +271,8 @@ void TestFunction_PixarTutorial_StageTraversal()
 	// This step of the tutorial originally uses usdview and the python interpreter.
 	// I will adapt the demonstrated commands to C++ code.
 
+	std::cout << "** TestFunction_PixarTutorial_StageTraversal **" << std::endl;
+
 	// -- Step 1
 	std::cout << "---- Step 1 ----" << std::endl;
 
@@ -382,6 +384,141 @@ void TestFunction_PixarTutorial_StageTraversal()
 	}
 }
 
+/*!
+@brief Function reproducing the Pixar USD tutorial on authoring variants
+@see https://openusd.org/release/tut_authoring_variants.html
+*/
+void TestFunction_PixarTutorial_AuthoringVariants()
+{
+	std::cout << "** TestFunction_PixarTutorial_AuthoringVariants **" << std::endl;
+
+// -- Step 1
+	std::cout << "---- Step 1 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		from pxr import Usd, UsdGeom
+		stage = Usd.Stage.Open('HelloWorld.usda')
+		colorAttr = UsdGeom.Gprim.Get(stage, '/hello/world').GetDisplayColorAttr()
+		colorAttr.Clear()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+
+	//note: Local "opinions" in prims are stronger than variant selections.
+	//		Therefore, the color of /hello/world is going to be cleared before adding 
+	//		variants to a variant set.
+	pxr::UsdStageRefPtr stage = pxr::UsdStage::Open("HelloWorld.usda");
+	pxr::UsdGeomGprim gprim = pxr::UsdGeomGprim::Get(stage, pxr::SdfPath("/hello/world"));
+	pxr::UsdAttribute colorAttr = gprim.GetDisplayColorAttr();
+	colorAttr.Clear();
+	
+	std::string fileResult;
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file HelloWorld.usda after clearing the display color of /hello/world:\n" << fileResult << std::endl;
+
+	// -- Step 2
+	std::cout << "---- Step 2 ----" << std::endl;
+
+	/*!Python code from the tutorial
+		rootPrim = stage.GetPrimAtPath('/hello')
+		vset = rootPrim.GetVariantSets().AddVariantSet('shadingVariant')
+		print(stage.GetRootLayer().ExportToString())
+	*/
+	
+	// Write the C++ equivalent of the python code above
+	pxr::UsdPrim rootPrim = stage->GetPrimAtPath(pxr::SdfPath("/hello"));
+	pxr::UsdVariantSet vset = rootPrim.GetVariantSets().AddVariantSet("shadingVariant");
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file HelloWorld.usda after adding a variant set to /hello:\n" << fileResult << std::endl;
+
+	// -- Step 3
+	std::cout << "---- Step 3 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		vset.AddVariant('red')
+		vset.AddVariant('blue')
+		vset.AddVariant('green')
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	vset.AddVariant("red");
+	vset.AddVariant("blue");
+	vset.AddVariant("green");
+	
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file HelloWorld.usda after adding variants to the variant set of /hello:\n" << fileResult << std::endl;
+
+	// -- Step 4 & 5
+	std::cout << "---- Step 4 & 5 ----" << std::endl;
+
+	/*!
+		vset.SetVariantSelection('red')
+		with vset.GetVariantEditContext():
+			colorAttr.Set([(1,0,0)])
+
+		vset.SetVariantSelection('blue')
+		with vset.GetVariantEditContext():
+			colorAttr.Set([(0,0,1)])
+
+		vset.SetVariantSelection('green')
+		with vset.GetVariantEditContext():
+			colorAttr.Set([(0,1,0)])
+
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	vset.SetVariantSelection("red");
+	{
+		pxr::UsdEditContext context(vset.GetVariantEditContext());
+		colorAttr.Set(pxr::VtVec3fArray({ pxr::GfVec3f(1, 0, 0) }));
+	}
+
+	vset.SetVariantSelection("blue");
+	{
+		pxr::UsdEditContext context(vset.GetVariantEditContext());
+		colorAttr.Set(pxr::VtVec3fArray({ pxr::GfVec3f(0, 0, 1) }));
+	}
+
+	vset.SetVariantSelection("green");//note: this is going to stay as the default selected variant in helloWorld.usda
+	{
+		pxr::UsdEditContext context(vset.GetVariantEditContext());
+		colorAttr.Set(pxr::VtVec3fArray({ pxr::GfVec3f(0, 1, 0) }));
+	}
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file HelloWorld.usda after setting the color of /hello/world according to the variant selection:\n" << fileResult << std::endl;
+
+	// -- Step 6
+	std::cout << "---- Step 6 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		# Show flattened view of the stage
+		print(stage.ExportToString(addSourceFileComment=False))
+	*/
+
+	// Write the C++ equivalent of the python code above
+	stage->ExportToString(&fileResult, false);
+	//note: Only the default variant is going to be shown in the flattened view
+	//		In particular, the green color is going to be used for the attribute displayColor of /hello/world
+	std::cout << "Flattened view of the stage of HelloWorld.usda:\n" << fileResult << std::endl;
+
+	// -- Step 7
+	std::cout << "---- Step 7 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		# save in a new file HelloWorldWithVariants.usda
+		stage.GetRootLayer().Export('HelloWorldWithVariants.usda')
+	*/
+
+	// Write the C++ equivalent of the python code above
+	stage->GetRootLayer()->Export("HelloWorldWithVariants.usda");
+	std::cout << "The stage of HelloWorld.usda with variants has been saved in HelloWorldWithVariants.usda." << std::endl;
+
+}
 
 int main()
 {
@@ -394,7 +531,9 @@ int main()
 
 	TestFunction_PixarTutorial_ReferencingLayers();
 
-	TestFunction_StageTraversal();
+	TestFunction_PixarTutorial_StageTraversal();
+
+	TestFunction_PixarTutorial_AuthoringVariants();
 
 	std::cout << "End of main." << std::endl;
 

@@ -16,3 +16,7 @@
 
 // For TestFunction_PixarTutorial_StageTraversal
 #include "pxr/usd/usd/primRange.h"
+
+//For TestFunction_PixarTutorial_AuthoringVariants
+#include "pxr/usd/usd/variantSets.h"
+#include "pxr/usd/usd/editContext.h"
