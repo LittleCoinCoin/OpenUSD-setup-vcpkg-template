@@ -55,12 +55,17 @@ target_include_directories(${TargetName}
 							"./headers"
 )
 
+
 add_custom_command(TARGET ${TargetName}
 	POST_BUILD
-	#COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${TargetName}>/<plugin-subdir>"
-	#COMMAND ${CMAKE_COMMAND} -E copy_if_different "<plugin-from-vcpkg-install>" "$<TARGET_FILE_DIR:${TargetName}>/<plugin-subdir>"
-	
-	
+
+	#### Copy extras to the binary directory to bring a few files useful for the replication of the tutorials. ####
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/extras"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_HOME_DIRECTORY}/extras" "${CMAKE_BINARY_DIR}/bin/extras"
+
+
+	#### Copy the required plugins to the binary directory. ####
+	#### Mandatory for the application to run. ####
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/lib/usd/"
 	
 	# Easy solution: copy all directories from "/lib/usd" of OpenUSD installed
