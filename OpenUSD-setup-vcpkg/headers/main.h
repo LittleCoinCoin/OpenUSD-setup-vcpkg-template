@@ -20,3 +20,6 @@
 //For TestFunction_PixarTutorial_AuthoringVariants
 #include "pxr/usd/usd/variantSets.h"
 #include "pxr/usd/usd/editContext.h"
+
+//For TestFunction_PixarTutorial_TransformationsAndAnimations
+#include "pxr/usd/usdGeom/metrics.h"

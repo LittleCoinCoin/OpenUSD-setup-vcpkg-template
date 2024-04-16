@@ -520,6 +520,324 @@ void TestFunction_PixarTutorial_AuthoringVariants()
 
 }
 
+/*!
+@brief A utility function to wrap around the creation of a new stage.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@return A new stage.
+@see https://openusd.org/release/tut_xforms.html
+*/
+pxr::UsdStageRefPtr MakeInitialStage(std::string& _path)
+{
+	/*! Python code from the tutorial
+		stage = Usd.Stage.CreateNew(path)
+		UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.z)
+		stage.SetStartTimeCode(1)
+		stage.SetEndTimeCode(192)
+		return stage
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdStageRefPtr stage = pxr::UsdStage::CreateNew(_path);
+	pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->z);
+	stage->SetStartTimeCode(1);
+	stage->SetEndTimeCode(192);
+	return stage;
+}
+
+/*!
+@brief A utility function to add a reference to a geometry.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@return The xform prim that was added to the stage.
+@see https://openusd.org/release/tut_xforms.html#id3
+*/
+pxr::UsdGeomXform AddReferenceToGeometry(pxr::UsdStageRefPtr _stage, std::string _path)
+{
+	/*! Python code from the tutorial
+		geom = UsdGeom.Xform.Define(stage, path)
+		geom.GetPrim().GetReferences().AddReference('./top.geom.usd')
+		return geom
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXform geom = pxr::UsdGeomXform::Define(_stage, pxr::SdfPath(_path));
+	geom.GetPrim().GetReferences().AddReference("./extras/top.geom.usd");
+	return geom;
+}
+
+/*!
+@brief A utility function to add a spin transformation to a geometry.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@see https://openusd.org/release/tut_xforms.html#id5
+*/
+void AddSpin(pxr::UsdGeomXform _geom)
+{
+	/*! Python code from the tutorial
+		spin = top.AddRotateZOp(opSuffix='spin')
+		spin.Set(time=1, value=0)
+		spin.Set(time=192, value=1440)
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXformOp spin = _geom.AddRotateZOp(pxr::UsdGeomXformOp::PrecisionFloat, pxr::TfToken("spin"));
+	spin.Set(0.f, 1.f);//value is first and time is second
+	spin.Set(1440.f, 192.f);//value is first and time is second
+}
+
+/*!
+@brief A utility function to add a tilt transformation to a geometry.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@see https://openusd.org/release/tut_xforms.html#id7
+*/
+void AddTilt(pxr::UsdGeomXform _geom)
+{
+	/*! Python code from the tutorial
+		tilt = top.AddRotateXOp(opSuffix='tilt')
+		tilt.Set(value=12)
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXformOp tilt = _geom.AddRotateXOp(pxr::UsdGeomXformOp::PrecisionFloat, pxr::TfToken("tilt"));
+	tilt.Set(12.f);
+}
+
+/*!
+@brief A utility function to add an offset transformation to a geometry.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@see https://openusd.org/release/tut_xforms.html#id9
+*/
+void AddOffset(pxr::UsdGeomXform _geom)
+{
+	/*! Python  code from the tutorial
+		top.AddTranslateOp(opSuffix='offset').Set(value=(0, 0.1, 0))
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXformOp offset = _geom.AddTranslateOp(pxr::UsdGeomXformOp::PrecisionFloat, pxr::TfToken("offset"));
+	offset.Set(pxr::GfVec3f(0, 0.1, 0));
+}
+
+/*!
+@brief A utility function to add a precession transformation to a geometry.
+@details This function is used in the Pixar tutorial on transformations and animations.
+@see https://openusd.org/release/tut_xforms.html#id9
+*/
+void AddPrecession(pxr::UsdGeomXform _geom)
+{
+	/*! Python code from the tutorial
+		precess = top.AddRotateZOp(opSuffix='precess')
+		precess.Set(time=1, value=0)
+		precess.Set(time=192, value=360)
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomXformOp precession = _geom.AddRotateZOp(pxr::UsdGeomXformOp::PrecisionFloat, pxr::TfToken("precess"));
+	precession.Set(0.f, 1.0f);
+	precession.Set(360.f, 192.f);
+}
+
+void TestFunction_PixarTutorial_TransformationsAndAnimations()
+{
+	
+	std::cout << std::endl << "** TestFunction_PixarTutorial_TransformationsAndAnimations **" << std::endl;
+
+	// -- Step 1
+	std::cout << "---- Step 1 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step1.usda')
+		stage.SetMetadata('comment', 'Step 1: Start and end time codes')
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	std::string path = "Step1.usda";
+	pxr::UsdStageRefPtr stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 1: Start and end time codes");
+	stage->GetRootLayer()->Save();
+
+	std::string fileResult;
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step1.usda:\n" << fileResult << std::endl;
+
+	// -- Step 2
+	std::cout << "---- Step 2 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step2.usda')
+		stage.SetMetadata('comment', 'Step 2: Geometry reference')
+		top = AddReferenceToGeometry(stage, '/Top')
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	path = "Step2.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 2: Geometry reference");
+	pxr::UsdGeomXform top = AddReferenceToGeometry(stage, "/Top");
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step2.usda:\n" << fileResult << std::endl;
+
+	// -- Step 3
+	std::cout << "---- Step 3 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step3.usda')
+		stage.SetMetadata('comment', 'Step 3: Adding spin animation')
+		top = AddReferenceToGeometry(stage, '/Top')
+		AddSpin(top)
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	path = "Step3.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 3: Adding spin animation");
+	top = AddReferenceToGeometry(stage, "/Top");
+	AddSpin(top);
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step3.usda:\n" << fileResult << std::endl;
+
+	// -- Step 4
+	std::cout << "---- Step 4 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step4.usda')
+		stage.SetMetadata('comment', 'Step 4: Adding tilt')
+		top = AddReferenceToGeometry(stage, '/Top')
+		AddTilt(top)
+		AddSpin(top)
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	path = "Step4.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 4: Adding tilt");
+	top = AddReferenceToGeometry(stage, "/Top");
+	AddTilt(top);
+	AddSpin(top);
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step4.usda:\n" << fileResult << std::endl;
+
+	// -- Step 4A
+	std::cout << "---- Step 4A ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step4A.usda')
+		stage.SetMetadata('comment', 'Step 4A: Adding spin and tilt')
+		top = AddReferenceToGeometry(stage, '/Top')
+		AddSpin(top)
+		AddTilt(top)
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	path = "Step4A.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 4A: Adding spin and tilt");
+	top = AddReferenceToGeometry(stage, "/Top");
+	AddSpin(top);
+	AddTilt(top);
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step4A.usda (Added Spin BEFORE Tilt):\n" << fileResult << std::endl;
+
+	// -- Step 5
+	std::cout << "---- Step 5 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = MakeInitialStage('Step5.usda')
+		stage.SetMetadata('comment', 'Step 5: Adding precession and offset')
+		top = AddReferenceToGeometry(stage, '/Top')
+		AddPrecession(top)
+		AddOffset(top)
+		AddTilt(top)
+		AddSpin(top)
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	path = "Step5.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 5: Adding precession and offset");
+	top = AddReferenceToGeometry(stage, "/Top");
+	AddPrecession(top);
+	AddOffset(top);
+	AddTilt(top);
+	AddSpin(top);
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step5.usda:\n" << fileResult << std::endl;
+
+	// -- Step 6
+	std::cout << "---- Step 6 ----" << std::endl;
+
+	/*! Python code from the tutorial
+		# Use animated layer from Step5
+		anim_layer_path = './Step5.usda'
+
+		stage = MakeInitialStage('Step6.usda')
+		stage.SetMetadata('comment', 'Step 6: Layer offsets and animation')
+
+		left = UsdGeom.Xform.Define(stage, '/Left')
+		left_top = UsdGeom.Xform.Define(stage, '/Left/Top')
+		left_top.GetPrim().GetReferences().AddReference(assetPath = anim_layer_path, primPath = '/Top')
+
+		middle = UsdGeom.Xform.Define(stage, '/Middle')
+		middle.AddTranslateOp().Set(value=(2, 0, 0))
+		middle_top = UsdGeom.Xform.Define(stage, '/Middle/Top')
+		middle_top.GetPrim().GetReferences().AddReference(assetPath = anim_layer_path, primPath = '/Top', layerOffset = Sdf.LayerOffset(offset=96))
+
+		right = UsdGeom.Xform.Define(stage, '/Right')
+		right.AddTranslateOp().Set(value=(4, 0, 0))
+		right_top = UsdGeom.Xform.Define(stage, '/Right/Top')
+		right_top.GetPrim().GetReferences().AddReference(assetPath = anim_layer_path, primPath = '/Top', layerOffset = Sdf.LayerOffset(scale=0.25))
+
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	std::string anim_layer_path = "./Step5.usda";
+
+	path = "Step6.usda";
+	stage = MakeInitialStage(path);
+	stage->SetMetadata(pxr::TfToken("comment"), "Step 6: Layer offsets and animation");
+
+	pxr::UsdGeomXform left = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Left"));
+	pxr::UsdGeomXform left_top = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Left/Top"));
+	left_top.GetPrim().GetReferences().AddReference(anim_layer_path, pxr::SdfPath("/Top"));
+
+	pxr::UsdGeomXform middle = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Middle"));
+	middle.AddTranslateOp().Set(pxr::GfVec3d(2, 0, 0));
+	pxr::UsdGeomXform middle_top = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Middle/Top"));
+	middle_top.GetPrim().GetReferences().AddReference(anim_layer_path, pxr::SdfPath("/Top"), pxr::SdfLayerOffset(96.));
+
+	pxr::UsdGeomXform right = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Right"));
+	right.AddTranslateOp().Set(pxr::GfVec3d(4, 0, 0));
+	pxr::UsdGeomXform right_top = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/Right/Top"));
+	right_top.GetPrim().GetReferences().AddReference(anim_layer_path, pxr::SdfPath("/Top"), pxr::SdfLayerOffset(0.0, 0.25));
+
+	stage->GetRootLayer()->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file Step6.usda:\n" << fileResult << std::endl;
+}
+
 int main()
 {
 
@@ -534,6 +852,8 @@ int main()
 	TestFunction_PixarTutorial_StageTraversal();
 
 	TestFunction_PixarTutorial_AuthoringVariants();
+
+	TestFunction_PixarTutorial_TransformationsAndAnimations();
 
 	std::cout << "End of main." << std::endl;
 
