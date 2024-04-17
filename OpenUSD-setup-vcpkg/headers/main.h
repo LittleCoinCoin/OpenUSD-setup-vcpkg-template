@@ -23,3 +23,10 @@
 
 //For TestFunction_PixarTutorial_TransformationsAndAnimations
 #include "pxr/usd/usdGeom/metrics.h"
+
+//For TestFunction_PixarTutorial_SimpleShading
+#include "pxr/usd/usd/modelAPI.h"
+#include "pxr/usd/usdGeom/mesh.h"
+#include "pxr/usd/usdGeom/primvarsAPI.h"
+#include "pxr/usd/usdShade/material.h"
+#include "pxr/usd/usdShade/materialBindingAPI.h"

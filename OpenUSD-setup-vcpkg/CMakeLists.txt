@@ -93,4 +93,9 @@ add_custom_command(TARGET ${TargetName}
 	#required for any of the built-in prims (sphere, mesh, etc.)
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/lib/usd/usdGeom"
 	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/lib/usd/usdGeom" "${CMAKE_BINARY_DIR}/lib/usd/usdGeom"
+
+	#required for materials, introduced in the tutorial on simple shading (TestFunction_PixarTutorial_SimpleShading)
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/lib/usd/usdShade"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows/lib/usd/usdShade" "${CMAKE_BINARY_DIR}/lib/usd/usdShade"
+
 )

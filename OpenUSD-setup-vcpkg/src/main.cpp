@@ -838,6 +838,152 @@ void TestFunction_PixarTutorial_TransformationsAndAnimations()
 	std::cout << "Content of file Step6.usda:\n" << fileResult << std::endl;
 }
 
+void TestFunction_PixarTutorial_SimpleShading()
+{
+	std::cout << "** TestFunction_PixarTutorial_SimpleShading **" << std::endl;
+
+	// -- Step 1
+	std::cout << "---- Step 1 ; Making a Model ----" << std::endl;
+
+	/*! Python code from the tutorial
+		stage = Usd.Stage.CreateNew("simpleShading.usd")
+		UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+		
+		modelRoot = UsdGeom.Xform.Define(stage, "/TexModel")
+		Usd.ModelAPI(modelRoot).SetKind(Kind.Tokens.component)
+
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdStageRefPtr stage = pxr::UsdStage::CreateNew("simpleShading.usd");
+	pxr::UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->y);
+
+	pxr::UsdGeomXform modelRoot = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/TexModel"));
+	pxr::UsdModelAPI(modelRoot).SetKind(pxr::TfToken("component"));
+
+	std::string fileResult;
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file simpleShading.usd:\n" << fileResult << std::endl;
+
+	// -- Step 2
+	std::cout << "---- Step 2 ; Adding a Mesh “Billboard” ----" << std::endl;
+
+	/*! Python code from the tutorial
+		billboard = UsdGeom.Mesh.Define(stage, "/TexModel/card")
+		billboard.CreatePointsAttr([(-430, -145, 0), (430, -145, 0), (430, 145, 0), (-430, 145, 0)])
+		billboard.CreateFaceVertexCountsAttr([4])
+		billboard.CreateFaceVertexIndicesAttr([0,1,2,3])
+		billboard.CreateExtentAttr([(-430, -145, 0), (430, 145, 0)])
+		texCoords = UsdGeom.PrimvarsAPI(billboard).CreatePrimvar("st",
+		                                    Sdf.ValueTypeNames.TexCoord2fArray,
+		                                    UsdGeom.Tokens.varying)
+		texCoords.Set([(0, 0), (1, 0), (1,1), (0, 1)])
+		
+		stage.Save()
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdGeomMesh billboard = pxr::UsdGeomMesh::Define(stage, pxr::SdfPath("/TexModel/card"));
+	billboard.CreatePointsAttr().Set(pxr::VtVec3fArray({ pxr::GfVec3f(-430, -145, 0), pxr::GfVec3f(430, -145, 0), pxr::GfVec3f(430, 145, 0), pxr::GfVec3f(-430, 145, 0) }));
+	billboard.CreateFaceVertexCountsAttr().Set(pxr::VtIntArray({ 4 }));
+	billboard.CreateFaceVertexIndicesAttr().Set(pxr::VtIntArray({ 0, 1, 2, 3 }));
+	billboard.CreateExtentAttr().Set(pxr::VtVec3fArray({ pxr::GfVec3f(-430, -145, 0), pxr::GfVec3f(430, 145, 0) }));
+	pxr::UsdGeomPrimvar texCoords = pxr::UsdGeomPrimvarsAPI(billboard).CreatePrimvar(pxr::TfToken("st"),
+		pxr::SdfValueTypeNames->TexCoord2fArray,
+		pxr::UsdGeomTokens->varying);
+	texCoords.Set(pxr::VtVec2fArray({ pxr::GfVec2f(0, 0), pxr::GfVec2f(1, 0), pxr::GfVec2f(1, 1), pxr::GfVec2f(0, 1) }));
+
+	stage->Save();
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file simpleShading.usd after adding a card mesh to the TexModel:\n" << fileResult << std::endl;
+
+	// -- Step 3
+	std::cout << "---- Step 3 ; Make a Material ----" << std::endl;
+
+	/*! Python code from the tutorial
+		material = UsdShade.Material.Define(stage, '/TexModel/boardMat')	
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdShadeMaterial material = pxr::UsdShadeMaterial::Define(stage, pxr::SdfPath("/TexModel/boardMat"));
+
+	// -- Step 4
+	std::cout << "---- Step 4 ; Add a UsdPreviewSurface ----" << std::endl;
+
+	/*! Python code from the tutorial
+		pbrShader = UsdShade.Shader.Define(stage, '/TexModel/boardMat/PBRShader')
+		pbrShader.CreateIdAttr("UsdPreviewSurface")
+		pbrShader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(0.4)
+		pbrShader.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(0.0)
+		
+		material.CreateSurfaceOutput().ConnectToSource(pbrShader.ConnectableAPI(), "surface")
+
+		print(stage.GetRootLayer().ExportToString())
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdShadeShader pbrShader = pxr::UsdShadeShader::Define(stage, pxr::SdfPath("/TexModel/boardMat/PBRShader"));
+	pbrShader.CreateIdAttr().Set(pxr::TfToken("UsdPreviewSurface"));
+	pbrShader.CreateInput(pxr::TfToken("roughness"), pxr::SdfValueTypeNames->Float).Set(0.4f);
+	pbrShader.CreateInput(pxr::TfToken("metallic"), pxr::SdfValueTypeNames->Float).Set(0.0f);
+
+	material.CreateSurfaceOutput().ConnectToSource(pbrShader.ConnectableAPI(), pxr::TfToken("surface"));
+
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file simpleShading.usd after adding a PBRShader shader to the boardMat:\n" << fileResult << std::endl;
+
+	// -- Step 5
+	std::cout << "---- Step 5 ; Add Texturing ----" << std::endl;
+
+	/*! Python code from the Tutorial
+		stReader = UsdShade.Shader.Define(stage, '/TexModel/boardMat/stReader')
+		stReader.CreateIdAttr('UsdPrimvarReader_float2')
+		
+		diffuseTextureSampler = UsdShade.Shader.Define(stage,'/TexModel/boardMat/diffuseTexture')
+		diffuseTextureSampler.CreateIdAttr('UsdUVTexture')
+		diffuseTextureSampler.CreateInput('file', Sdf.ValueTypeNames.Asset).Set("USDLogoLrg.png")
+		diffuseTextureSampler.CreateInput("st", Sdf.ValueTypeNames.Float2).ConnectToSource(stReader.ConnectableAPI(), 'result')
+		diffuseTextureSampler.CreateOutput('rgb', Sdf.ValueTypeNames.Float3)
+		pbrShader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).ConnectToSource(diffuseTextureSampler.ConnectableAPI(), 'rgb')
+		
+		stInput = material.CreateInput('frame:stPrimvarName', Sdf.ValueTypeNames.Token)
+		stInput.Set('st')
+		
+		stReader.CreateInput('varname',Sdf.ValueTypeNames.Token).ConnectToSource(stInput)
+		
+		billboard.GetPrim().ApplyAPI(UsdShade.MaterialBindingAPI)
+		UsdShade.MaterialBindingAPI(billboard).Bind(material)
+		
+		stage.Save()
+	*/
+
+	// Write the C++ equivalent of the python code above
+	pxr::UsdShadeShader stReader = pxr::UsdShadeShader::Define(stage, pxr::SdfPath("/TexModel/boardMat/stReader"));
+	stReader.CreateIdAttr().Set(pxr::TfToken("UsdPrimvarReader_float2"));
+
+	pxr::UsdShadeShader diffuseTextureSampler = pxr::UsdShadeShader::Define(stage, pxr::SdfPath("/TexModel/boardMat/diffuseTexture"));
+	diffuseTextureSampler.CreateIdAttr().Set(pxr::TfToken("UsdUVTexture"));
+	diffuseTextureSampler.CreateInput(pxr::TfToken("file"), pxr::SdfValueTypeNames->Asset).Set(pxr::SdfAssetPath("./extras/USDLogoLrg.png"));
+	diffuseTextureSampler.CreateInput(pxr::TfToken("st"), pxr::SdfValueTypeNames->Float2).ConnectToSource(stReader.ConnectableAPI(), pxr::TfToken("result"));
+	diffuseTextureSampler.CreateOutput(pxr::TfToken("rgb"), pxr::SdfValueTypeNames->Float3);
+	pbrShader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f).ConnectToSource(diffuseTextureSampler.ConnectableAPI(), pxr::TfToken("rgb"));
+	
+	pxr::UsdAttribute stInput = material.CreateInput(pxr::TfToken("frame:stPrimvarName"), pxr::SdfValueTypeNames->Token);
+	stInput.Set(pxr::TfToken("st"));
+
+	stReader.CreateInput(pxr::TfToken("varname"), pxr::SdfValueTypeNames->Token).ConnectToSource(stInput.GetPath());
+
+	billboard.GetPrim().ApplyAPI(pxr::TfToken("MaterialBindingAPI"));//note: the plugin usdShade MUST be loaded
+	pxr::UsdShadeMaterialBindingAPI(billboard).Bind(material);
+
+	stage->Save();
+	stage->GetRootLayer()->ExportToString(&fileResult);
+	std::cout << "Content of file simpleShading.usd after adding texturing to the boardMat:\n" << fileResult << std::endl;
+}
+
 int main()
 {
 
@@ -854,6 +1000,8 @@ int main()
 	TestFunction_PixarTutorial_AuthoringVariants();
 
 	TestFunction_PixarTutorial_TransformationsAndAnimations();
+
+	TestFunction_PixarTutorial_SimpleShading();
 
 	std::cout << "End of main." << std::endl;
 
