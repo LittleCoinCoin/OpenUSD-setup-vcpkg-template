@@ -1,0 +1,107 @@
+name: Linux
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      build_config:
+        description: 'Comma-separated "Release" and/or "Debug"'
+        default: '"Release", "Debug"'
+        required: true
+      clang_version: 
+        description: 'Comma-separated "17" and/or "18" and/or "19"'
+        default: '"17", "18", "19"'
+        required: true
+
+jobs:
+  ubuntu_clang:
+    name: Ubuntu | Clang
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_config: ${{ fromJSON(format('[{0}]', inputs.build_config || '"Release", "Debug"')) }}
+        clang_version: ${{ fromJSON(format('[{0}]', inputs.clang_version || '"17", "18", "19"')) }}
+
+    env:
+      clang_compiler_version: -${{ matrix.clang_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install suitable compiler
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x ./llvm.sh
+          sudo ./llvm.sh ${{ matrix.clang_version }}
+
+      - name: Install CMake and ninja
+        uses: lukka/get-cmake@latest
+      
+      - name: Setup VCPKG
+        uses: lukka/run-vcpkg@v11
+        with:
+          # This is the glob expression used to locate the vcpkg.json and add its
+          # hash to the cache key. Change it to match a single manifest file you want
+          # to use.
+          vcpkgJsonGlob: '**/vcpkg.json'
+
+      - name: Build CppProfiler
+        uses: lukka/run-cmake@v10
+        with:
+          # This is the name of the CMakePresets.json's configuration to use to generate
+          # the project files.
+          configurePreset: "Clang"
+          
+          # This is the name of the CMakePresets.json's configuration to build the project.
+          buildPreset: "Clang ${{ matrix.build_config }}"
+
+
+  ubuntu_gcc:
+    name: Ubuntu | GCC
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_config: [Release, Debug]
+        gcc_version: [11, 12, 13]
+
+    env:
+      gcc_compiler_version: -${{ matrix.gcc_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install suitable compiler
+        run: sudo apt-get install g++-${{ matrix.gcc_version }}
+
+      - name: Install CMake and ninja
+        uses: lukka/get-cmake@latest
+      
+      - name: Setup VCPKG
+        uses: lukka/run-vcpkg@v11
+        with:
+          # This is the glob expression used to locate the vcpkg.json and add its
+          # hash to the cache key. Change it to match a single manifest file you want
+          # to use.
+          vcpkgJsonGlob: '**/vcpkg.json'
+
+      - name: Build CppProfiler
+        uses: lukka/run-cmake@v10
+        with:
+          # This is the name of the CMakePresets.json's configuration to use to generate
+          # the project files.
+          configurePreset: "GCC"
+          
+          # This is the name of the CMakePresets.json's configuration to build the project.
+          buildPreset: "GCC ${{ matrix.build_config }}"

@@ -1,0 +1,66 @@
+name: Windows
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      build_config:
+        description: 'Comma-separated "Release" and/or "Debug"'
+        default: '"Release", "Debug"'
+        required: true
+      msvc_toolset: 
+        description: 'Comma-separated "v141" and/or "v142" and/or "v143"'
+        default: '"v141", "v142", "v143"'
+        required: true
+      target_architecture: 
+        description: 'Comma-separated "x64" and/or "x86"'
+        default: '"x64", "x86"'
+        required: true
+
+jobs:
+  windows_msvc:
+    name: Windows | MSVC
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_config: ${{ fromJSON(format('[{0}]', inputs.build_config || '"Release", "Debug"')) }}
+        msvc_toolset: ${{ fromJSON(format('[{0}]', inputs.msvc_toolset || '"v143"')) }}
+        target_architecture: ${{ fromJSON(format('[{0}]', inputs.target_architecture || '"x64", "x86"')) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      
+      - name: Setup VCPKG
+        uses: lukka/run-vcpkg@v11
+        with:
+          # This is the glob expression used to locate the vcpkg.json and add its
+          # hash to the cache key. Change it to match a single manifest file you want
+          # to use.
+          vcpkgJsonGlob: '**/vcpkg.json'
+
+      - name: Setup Visual Studio Dev Environment
+        # This action guarentess that the generator will be overriden to the appropriate VS
+        # version depending on the toolset.
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: "17"
+
+      - name: Build CppProfiler
+        uses: lukka/run-cmake@v10
+        with:
+          # This is the name of the CMakePresets.json's configuration to use to generate
+          # the project files.
+          configurePreset: "MSVC-${{ matrix.target_architecture }}"
+
+          # All parameters passed to cmake project generation
+          configurePresetCmdString: "[`--preset`, `$[env.CONFIGURE_PRESET_NAME]`, `-T`, `${{ matrix.msvc_toolset }}`]"
+
+          # This is the name of the CMakePresets.json's configuration to build the project.
+          buildPreset: "MSVC ${{ matrix.build_config }} ${{ matrix.target_architecture }}"

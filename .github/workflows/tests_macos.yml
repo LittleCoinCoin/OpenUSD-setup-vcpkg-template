@@ -1,0 +1,49 @@
+name: MacOS
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      build_config:
+        description: 'Comma-separated "Release" and/or "Debug"'
+        default: '"Release", "Debug"'
+        required: true
+
+jobs:
+  macos_clang:
+    name: MacOS | Clang
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_config: ${{ fromJSON(format('[{0}]', inputs.build_config || '"Release", "Debug"')) }}
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Install CMake and ninja
+        uses: lukka/get-cmake@latest
+      
+      - name: Setup VCPKG
+        uses: lukka/run-vcpkg@v11
+        with:
+          # This is the glob expression used to locate the vcpkg.json and add its
+          # hash to the cache key. Change it to match a single manifest file you want
+          # to use.
+          vcpkgJsonGlob: '**/vcpkg.json'
+
+      - name: Build CppProfiler
+        uses: lukka/run-cmake@v10
+        with:
+          # This is the name of the CMakePresets.json's configuration to use to generate
+          # the project files.
+          configurePreset: "Clang"
+          
+          # This is the name of the CMakePresets.json's configuration to build the project.
+          buildPreset: "Clang ${{ matrix.build_config }}"
