@@ -38,7 +38,7 @@ jobs:
           # to use.
           vcpkgJsonGlob: '**/vcpkg.json'
 
-      - name: Build CppProfiler
+      - name: Build OpenUSD-setup-vcpkg-template
         uses: lukka/run-cmake@v10
         with:
           # This is the name of the CMakePresets.json's configuration to use to generate
