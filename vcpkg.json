@@ -7,7 +7,7 @@
     },
     "usd"
   ],
-  "builtin-baseline": "61f610845fb206298a69f708104a51d651872877",
+  "builtin-baseline": "fc6345e114c2e2c4f9714037340ccb08326b3e8c",
   "overrides": [
     {
       "name": "tbb",
