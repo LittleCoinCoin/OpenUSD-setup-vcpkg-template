@@ -52,6 +52,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
         with:
           vs-version: "17"
+          msbuild-architecture: ${{ matrix.target_architecture }}
 
       - name: Build OpenUSD-setup-vcpkg-template
         uses: lukka/run-cmake@v10
